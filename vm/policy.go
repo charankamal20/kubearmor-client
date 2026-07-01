@@ -81,6 +81,7 @@ func sendPolicyOverGRPC(o PolicyOptions, policyEventData []byte, kind string) er
 
 // PolicyHandling Function recives path to YAML file with the type of event and emits an Host Policy Event to KubeArmor gRPC/HTTP Server
 func PolicyHandling(t string, path string, o PolicyOptions) error {
+	fmt.Println("ADDING POLICY")
 	var k struct {
 		Kind string `json:"kind"`
 	}
