@@ -441,6 +441,8 @@ func WatchTelemetryHelper(arr []byte, t string, o Options) {
 			"ContainerName",
 			"ContainerID",
 			"ContainerImage",
+			"ProcessName",
+			"ParentProcessName",
 			"Type",
 			"PolicyName",
 			"Severity",

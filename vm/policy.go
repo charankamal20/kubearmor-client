@@ -12,7 +12,6 @@ import (
 	"regexp"
 	"strings"
 
-	tp "github.com/kubearmor/KubeArmor/KubeArmor/types"
 	pb "github.com/kubearmor/KubeArmor/protobuf"
 
 	"google.golang.org/grpc"
@@ -109,47 +108,16 @@ func PolicyHandling(t string, path string, o PolicyOptions) error {
 			return err
 		}
 
-		var (
-			containerPolicy tp.K8sKubeArmorPolicy
-			hostPolicy      tp.K8sKubeArmorHostPolicy
-			networkPolicy   tp.K8sKubeArmorNetworkPolicy
-			policyEvent     any
-		)
-
-		switch k.Kind {
-		case KubeArmorHostPolicy:
-			err = json.Unmarshal(js, &hostPolicy)
-			if err != nil {
-				return err
-			}
-
-			policyEvent = tp.K8sKubeArmorHostPolicyEvent{
-				Type:   t,
-				Object: hostPolicy,
-			}
-
-		case KubeArmorPolicy:
-			err = json.Unmarshal(js, &containerPolicy)
-			if err != nil {
-				return err
-			}
-
-			policyEvent = tp.K8sKubeArmorPolicyEvent{
-				Type:   t,
-				Object: containerPolicy,
-			}
-
-		case KubeArmorNetworkPolicy:
-			err = json.Unmarshal(js, &networkPolicy)
-			if err != nil {
-				return err
-			}
-
-			policyEvent = tp.K8sKubeArmorNetworkPolicyEvent{
-				Type:   t,
-				Object: networkPolicy,
-			}
-
+		// Instead of unmarshaling into typed structs (which drops unknown fields
+		// like matchPackages if compiled against an older types.go), we wrap the
+		// raw JSON directly into the policy event envelope.
+		var rawSpec json.RawMessage = js
+		policyEvent := struct {
+			Type   string          `json:"type"`
+			Object json.RawMessage `json:"object"`
+		}{
+			Type:   t,
+			Object: rawSpec,
 		}
 
 		policyEventData, err := json.Marshal(policyEvent)
